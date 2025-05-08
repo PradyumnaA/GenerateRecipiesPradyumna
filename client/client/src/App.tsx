@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import Header from './components/Navbar';
-import { Container, Row, Col, Button, Form, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Button, Form, Spinner, Image } from 'react-bootstrap';
 
 export default function App() {
   const [input, setInput] = useState('');
   const [recipe, setRecipe] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async () => {
     setLoading(true);
-    const res = await fetch('http://localhost:3001/api/generate', {
+
+    const recipeRes = await fetch('http://localhost:3001/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ingredients: input })
     });
-    const data = await res.json();
-    setRecipe(data.recipe);
+    const recipeData = await recipeRes.json();
+    setRecipe(recipeData.recipe);
+
+    const imageRes = await fetch('http://localhost:3001/api/generate-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyword: input.split(',')[0] })
+    });
+    const imageData = await imageRes.json();
+    setImageUrl(imageData.imageUrl);
+
     setLoading(false);
   };
 
@@ -46,6 +57,13 @@ export default function App() {
             </Button>
           </Col>
         </Row>
+        {imageUrl && (
+          <Row className="mb-3 text-center">
+            <Col>
+              <Image src={imageUrl} fluid alt="Generated dish" className="rounded border" />
+            </Col>
+          </Row>
+        )}
         <Row>
           <Col>
             <pre className="bg-light p-3 rounded border">
