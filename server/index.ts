@@ -1,5 +1,4 @@
 import { Elysia } from 'elysia';
-import { Configuration, OpenAIApi } from 'openai';
 import { cors } from '@elysiajs/cors';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -7,25 +6,18 @@ dotenv.config();
 const app = new Elysia();
 app.use(cors());
 
-const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
-const openai = new OpenAIApi(configuration);
-
-app.post('/api/generate', async ({ body }) => {
-  const { ingredients } = body;
+// Generate image using a free API (e.g., Lexica Art Proxy)
+app.post('/api/generate-image', async ({ body }) => {
+  const { keyword } = body;
   try {
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-4',
-      messages: [
-        {
-          role: 'user',
-          content: `Suggest 3 vegetarian recipes using: ${ingredients}. Format with name, description, ingredients, and instructions.`
-        }
-      ]
-    });
-    return { recipe: completion.data.choices[0].message.content };
-  } catch (err) {
-    console.error(err);
-    return { error: 'Failed to generate recipe' };
+    const imagePrompt = `${keyword} vegetarian dish, food photography, realistic, white background`;
+    const url = `https://api.unsplash.com/photos/random?query=${encodeURIComponent(imagePrompt)}&client_id=${process.env.UNSPLASH_ACCESS_KEY}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return { imageUrl: data.urls?.regular || '' };
+  } catch (error) {
+    console.error(error);
+    return { error: 'Failed to generate image' };
   }
 });
 

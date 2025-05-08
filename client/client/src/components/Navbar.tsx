@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { Navbar, Container, Nav } from 'react-bootstrap';
 import { FaSearch, FaUserCircle } from 'react-icons/fa';
 
